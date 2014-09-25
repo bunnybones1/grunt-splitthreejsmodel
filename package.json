@@ -36,6 +36,12 @@
   "peerDependencies": {
     "grunt": "~0.4.5"
   },
+  "dependencies": {
+    "lodash": "~2.4.1",
+    "threejs": "git://github.com/bunnybones1/three.js.git",
+    "tar": "~0.1.19",
+    "fstream": "~0.1.25"
+  },
   "keywords": [
     "gruntplugin"
   ]

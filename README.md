@@ -1,6 +1,6 @@
 # grunt-splitthreejsmodel
 
-> A grunt plugin to split threejs json model files into geometry files and a hierarchy of object json files. For use in conjunction with h[grunt-convertautodesktothree](https://github.com/bunnybones1/grunt-convertautodesktothreejs).
+> A grunt plugin to split threejs json model files into geometry files and a hierarchy of object json files. For use in conjunction with [grunt-convertautodesktothreejs](https://github.com/bunnybones1/grunt-convertautodesktothreejs).
 
 ## Getting Started
 This plugin requires Grunt `~0.4.5`
@@ -8,7 +8,7 @@ This plugin requires Grunt `~0.4.5`
 If you haven't used [Grunt](http://gruntjs.com/) before, be sure to check out the [Getting Started](http://gruntjs.com/getting-started) guide, as it explains how to create a [Gruntfile](http://gruntjs.com/sample-gruntfile) as well as install and use Grunt plugins. Once you're familiar with that process, you may install this plugin with this command:
 
 ```shell
-npm install grunt-splitthreejsmodel --save-dev
+npm install bunnybones1/grunt-splitthreejsmodeljs --save-dev
 ```
 
 Once the plugin has been installed, it may be enabled inside your Gruntfile with this line of JavaScript:
@@ -22,68 +22,25 @@ grunt.loadNpmTasks('grunt-splitthreejsmodel');
 ### Overview
 In your project's Gruntfile, add a section named `splitthreejsmodel` to the data object passed into `grunt.initConfig()`.
 
+### Usage Examples
+
 ```js
 grunt.initConfig({
   splitthreejsmodel: {
     options: {
       // Task-specific options go here.
     },
-    your_target: {
-      // Target-specific file lists and/or options go here.
-    },
-  },
-});
-```
-
-### Options
-
-#### options.separator
-Type: `String`
-Default value: `',  '`
-
-A string value that is used to do something with whatever.
-
-#### options.punctuation
-Type: `String`
-Default value: `'.'`
-
-A string value that is used to do something else with whatever else.
-
-### Usage Examples
-
-#### Default Options
-In this example, the default options are used to do something with whatever. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result would be `Testing, 1 2 3.`
-
-```js
-grunt.initConfig({
-  splitthreejsmodel: {
-    options: {},
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
-  },
-});
-```
-
-#### Custom Options
-In this example, custom options are used to do something else with whatever else. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result in this case would be `Testing: 1 2 3 !!!`
-
-```js
-grunt.initConfig({
-  splitthreejsmodel: {
-    options: {
-      separator: ': ',
-      punctuation: ' !!!',
-    },
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
+    exampleScene: {
+      options: {
+        // Target-specific options go here.
+        models: [
+          'test/fixtures/parse.autodesk.dae'
+        ]
+      }
+    }
   },
 });
 ```
 
 ## Contributing
 In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
-
-## Release History
-_(Nothing yet)_

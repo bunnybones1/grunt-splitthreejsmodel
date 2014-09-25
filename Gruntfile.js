@@ -28,22 +28,16 @@ module.exports = function(grunt) {
       tests: ['tmp']
     },
 
-    // Configuration to be run (and then tested).
+    //note that filenames will automatically be fixed into .json. This is to help simplify your configs when used in conjunction with grunt-convertautodesktothreejs
     splitthreejsmodel: {
+      options: {
+        standaloneTest: true
+      },
       default_options: {
         options: {
-        },
-        files: {
-          'tmp/default_options': ['test/fixtures/testing', 'test/fixtures/123']
-        }
-      },
-      custom_options: {
-        options: {
-          separator: ': ',
-          punctuation: ' !!!'
-        },
-        files: {
-          'tmp/custom_options': ['test/fixtures/testing', 'test/fixtures/123']
+          models: [
+            'test/fixtures/parse.autodesk.dae'
+          ]
         }
       }
     },
