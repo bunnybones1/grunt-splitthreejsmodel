@@ -36,7 +36,8 @@ module.exports = function(grunt) {
       default_options: {
         options: {
           models: [
-            'test/fixtures/parse.autodesk.dae'
+            'test/model1/parse.autodesk.dae',
+            'test/model2/parse2.autodesk.dae'
           ]
         }
       }

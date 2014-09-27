@@ -16,61 +16,25 @@ var path = require('path'),
   THREE = require('../lib/three.min.nodejs'),
   ensureDirectoryExists = require('../utils/ensureDirectoryExists');
 
+//task shared scope
+var writing = 0;
+var wrote = 0;
 var done;
 var options;
 var _grunt;
-var outputPath;
-
-var writing = 0;
-var wrote = 0;
 
 function isDoneWritingAllFiles() {
   return writing === wrote;
 }
 
-function writeStringToFile(data, path) {
-  fs.open(path, 'wx', function(err, fd){
-    if(fd) {
-      fs.write(fd, data, 0, 'utf8', function(err, written, buffer) {
-        fs.close(fd);
-        _grunt.log.oklns('wrote', derive.difference(outputPath, path));
-        wrote++;
-        if(isDoneWritingAllFiles()) {
-          done();
-        }
-      });
-    }
-  });
-}
-
-function writeStringToFileEvenIfExists(data, path) {
-  fs.exists(path, function(exists){
-    if(exists) {
-      fs.unlink(path, function() {
-        writeStringToFile(data, path);
-      });
-    } else {
-      writeStringToFile(data, path);
-    }
-  });
-}
-
-function writeObjectFile(objectName, objectData) {
-  var cloneString = JSON.stringify(objectData);
-  var objectPath = path.resolve(outputPath + objectName + '.json');
-  _grunt.log.oklns("writing", objectName);
-  writing++;
-  ensureDirectoryExists(objectPath, function() {
-    writeStringToFileEvenIfExists(cloneString, objectPath);
-  });
-}
-
-function splitModel(srcPath) {
+//individual file scope
+function SplitModel(srcPath) {
   var inputPath = path.resolve(derive.replaceExtension(srcPath, 'json'));
   console.log(inputPath);
-  outputPath = path.resolve(derive.path(srcPath)) + '/';
-  console.log(outputPath);
-  ensureDirectoryExists(outputPath, function() {
+  var _this = this;
+  this.outputPath = path.resolve(derive.path(srcPath)) + '/';
+  console.log(this.outputPath);
+  ensureDirectoryExists(this.outputPath, function() {
     fs.readFile(inputPath, 'utf8', function (err, dataString) {
       _grunt.log.oklns('Loading', inputPath);
       if (err) {
@@ -88,22 +52,56 @@ function splitModel(srcPath) {
       var objectsToWrite = require('../utils/splitModel')(data, baseName + '/', _grunt);
       for(var objectName in objectsToWrite) {
         //write the json files
-        writeObjectFile(objectName, objectsToWrite[objectName]);
+        _this.writeObjectFile(objectName, objectsToWrite[objectName]);
       }
     });
   });
 }
 
+SplitModel.prototype = {
+  writeStringToFile: function(data, path) {
+    var _this = this;
+    fs.open(path, 'wx', function(err, fd){
+      if(fd) {
+        fs.write(fd, data, 0, 'utf8', function(err, written, buffer) {
+          fs.close(fd);
+          _grunt.log.oklns('wrote', derive.difference(_this.outputPath, path));
+          wrote++;
+          if(isDoneWritingAllFiles()) {
+            done();
+          }
+        });
+      }
+    });
+  },
+
+  writeStringToFileEvenIfExists: function(data, path) {
+    var _this = this;
+    fs.exists(path, function(exists){
+      if(exists) {
+        fs.unlink(path, function() {
+          _this.writeStringToFile(data, path);
+        });
+      } else {
+        _this.writeStringToFile(data, path);
+      }
+    });
+  },
+
+  writeObjectFile: function(objectName, objectData) {
+    var cloneString = JSON.stringify(objectData);
+    var objectPath = path.resolve(this.outputPath + objectName + '.json');
+    _grunt.log.oklns("writing", objectName);
+    writing++;
+    var _this = this;
+    ensureDirectoryExists(objectPath, function() {
+      _this.writeStringToFileEvenIfExists(cloneString, objectPath);
+    });
+  },
+}
+
 module.exports = function(grunt) {
 
-  // Please see the Grunt documentation for more information regarding task
-  // creation: http://gruntjs.com/creating-tasks
-
-  // External libs.
-  //var _ = require('lodash');
-
-  // Internal libs.
-  //var git = require('./lib/git').init(grunt);
   _grunt = grunt;
 
   grunt.registerMultiTask('splitthreejsmodel', 'A grunt plugin to split threejs json model files into geometry files and a hierarchy of object json files. For use in conjunction with [grunt-convertautodesktothree](https://github.com/bunnybones1/grunt-convertautodesktothreejs).', function() {
@@ -113,7 +111,7 @@ module.exports = function(grunt) {
     done = this.async();
 
     for (var i = options.models.length - 1; i >= 0; i--) {
-      splitModel(options.models[i]);
+      new SplitModel(options.models[i]);
     }
   });
 };
