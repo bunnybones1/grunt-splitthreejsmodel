@@ -28,12 +28,12 @@ function isDoneWritingAllFiles() {
 }
 
 //individual file scope
-function SplitModel(srcPath) {
-  var inputPath = path.resolve(derive.replaceExtension(srcPath, 'json'));
-  console.log(inputPath);
+function SplitModel(srcPath){
+  var inputPath = derive.replaceExtension(srcPath, 'json');
+  _grunt.verbose.writeln('splitting', srcPath, inputPath);
   var _this = this;
-  this.outputPath = path.resolve(derive.path(srcPath)) + '/';
-  console.log(this.outputPath);
+  this.outputPath = path.normalize(path.dirname(srcPath) + '/' + path.basename(srcPath, path.extname(srcPath)) + '/..');
+  _grunt.verbose.writeln('outputting to', this.outputPath);
   ensureDirectoryExists(this.outputPath, function() {
     fs.readFile(inputPath, 'utf8', function (err, dataString) {
       _grunt.log.oklns('Loading', inputPath);
@@ -44,12 +44,12 @@ function SplitModel(srcPath) {
       }
 
       _grunt.log.oklns('Loaded', ~~(dataString.length * 0.001) * 0.001, 'megabytes');
-      var baseName = derive.baseName(inputPath);
+      var baseName = path.basename(inputPath, path.extname(inputPath));
 
       _grunt.log.oklns('Splitting...');
       //var loader = new THREE.SceneLoader();
       var data = JSON.parse(dataString);
-      var objectsToWrite = require('../utils/splitModel')(data, baseName + '/', _grunt);
+      var objectsToWrite = require('../utils/splitModel')(data, path.normalize(baseName + '/'), _grunt);
       for(var objectName in objectsToWrite) {
         //write the json files
         _this.writeObjectFile(objectName, objectsToWrite[objectName]);
@@ -59,13 +59,13 @@ function SplitModel(srcPath) {
 }
 
 SplitModel.prototype = {
-  writeStringToFile: function(data, path) {
+  writeStringToFile: function(data, pathDst) {
     var _this = this;
-    fs.open(path, 'wx', function(err, fd){
+    fs.open(pathDst, 'wx', function(err, fd){
       if(fd) {
         fs.write(fd, data, 0, 'utf8', function(err, written, buffer) {
           fs.close(fd);
-          _grunt.log.oklns('wrote', derive.difference(_this.outputPath, path));
+          _grunt.log.oklns('wrote', derive.difference(_this.outputPath, pathDst));
           wrote++;
           if(isDoneWritingAllFiles()) {
             done();
@@ -75,26 +75,26 @@ SplitModel.prototype = {
     });
   },
 
-  writeStringToFileEvenIfExists: function(data, path) {
+  writeStringToFileEvenIfExists: function(data, pathDst) {
     var _this = this;
-    fs.exists(path, function(exists){
+    fs.exists(pathDst, function(exists){
       if(exists) {
-        fs.unlink(path, function() {
-          _this.writeStringToFile(data, path);
+        fs.unlink(pathDst, function() {
+          _this.writeStringToFile(data, pathDst);
         });
       } else {
-        _this.writeStringToFile(data, path);
+        _this.writeStringToFile(data, pathDst);
       }
     });
   },
 
   writeObjectFile: function(objectName, objectData) {
     var cloneString = JSON.stringify(objectData);
-    var objectPath = path.resolve(this.outputPath + objectName + '.json');
+    var objectPath = path.normalize(this.outputPath + '/' + objectName + '.json');
     _grunt.log.oklns("writing", objectName);
     writing++;
     var _this = this;
-    ensureDirectoryExists(objectPath, function() {
+    ensureDirectoryExists(path.dirname(objectPath), function() {
       _this.writeStringToFileEvenIfExists(cloneString, objectPath);
     });
   },
