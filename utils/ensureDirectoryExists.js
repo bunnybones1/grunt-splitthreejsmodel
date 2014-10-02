@@ -1,13 +1,21 @@
-var fs = require('fs');
-
-function ensureDirectoryExists(path, callback) {
-	var path = path.substring(0, path.lastIndexOf('/'));
-	var stepsAlongPath = path.split('/');
-	var path = stepsAlongPath.shift();
+var fs = require('fs'),
+	derive = require('./filePathDerivatives'),
+	path = require('path');
+function ensureDirectoryExists(pathDst, callback) {
+	var rootPath = path.resolve('.');
+	var startPath = path.resolve(pathDst);
+	var stepPath = path.resolve(pathDst);
+	var stepsAlongPath = [];
+	while(rootPath != startPath) {
+		startPath = path.normalize(startPath + '/..');
+		stepsAlongPath.push(derive.difference(stepPath, startPath));
+		stepPath = startPath;
+	}
+	stepPath = rootPath;
 	while(stepsAlongPath.length > 0) {
-		path += '/' + stepsAlongPath.shift();
-		if(!fs.existsSync(path)) {
-			fs.mkdirSync(path);
+		stepPath = stepPath + stepsAlongPath.pop();
+		if(!fs.existsSync(stepPath)) {
+			fs.mkdirSync(stepPath);
 		}
 	}
 	callback();	

@@ -1,4 +1,5 @@
 var _ = require('lodash');
+var path = require('path');
 var geometriesData;
 var embedsData;
 var optimizeGeometry = require('./optimizeGeometry');
@@ -7,27 +8,27 @@ var optimizeDecimalPlaces = 3;
 var reduceRedudantGeometry = true;
 var findSimilarGeometry = require('./findSimilarGeometry');
 var _geometryCache; 
-function saveObjectData(data, path, objectsToWrite, grunt) {
+function saveObjectData(data, pathDst, objectsToWrite, grunt) {
 	if(data.children) {
 		for(var objectName in data.children) {
 			var object = data.children[objectName];
-			saveObjectData(object, path + objectName + '/', objectsToWrite, grunt);
+			saveObjectData(object, path.normalize(pathDst + objectName + '/'), objectsToWrite, grunt);
 		};
 		for(var objectName in data.children) {
 			data.children[objectName] = objectName;
 		}
 	}
-	objectsToWrite[path+'index'] = data;
-	saveGeometryDataIfAvailable(data, path, objectsToWrite, grunt);
+	objectsToWrite[path.normalize(pathDst+'/index')] = data;
+	saveGeometryDataIfAvailable(data, pathDst, objectsToWrite, grunt);
 }
 
-function saveGeometryDataIfAvailable(data, path, objectsToWrite, grunt) {
+function saveGeometryDataIfAvailable(data, pathDst, objectsToWrite, grunt) {
 	if(data.geometry) {
 		var geometryData = embedsData[geometriesData[data.geometry].id];
 		if(useOptimize) optimizeGeometry(geometryData, optimizeDecimalPlaces);
 
 		function queueGeometryWrite() {
-			objectsToWrite['geometry/' + data.geometry] = geometryData;
+			objectsToWrite[path.normalize('geometry/' + data.geometry)] = geometryData;
 		}
 
 		if(reduceRedudantGeometry) {
@@ -45,7 +46,7 @@ function saveGeometryDataIfAvailable(data, path, objectsToWrite, grunt) {
 		}
 	}
 }
-function splitModel(data, path, grunt) {
+function splitModel(data, pathDst, grunt) {
 	var objectsToWrite = {};
 	_geometryCache = {};
 	geometriesData = data.geometries;
@@ -53,38 +54,8 @@ function splitModel(data, path, grunt) {
 	var root = {
 		children : data.objects
 	}
-	saveObjectData(root, path, objectsToWrite, grunt);
+	saveObjectData(root, pathDst, objectsToWrite, grunt);
 	return objectsToWrite;
 }
 
 module.exports = splitModel;
-/*
-		var geometryName = object.geometry;
-		grunt.log.oklns(geometryName);
-		var embedName = data.geometries[geometryName].id;
-		var materialName = object.material;
-		var clone = _.clone(data, true);
-		//clean up the clone
-		for(var objectNameToDelete in data.objects) {
-			if(objectName == objectNameToDelete) continue;
-			var geometryNameToDelete = data.objects[objectNameToDelete].geometry;
-			var embedNameToDelete = data.geometries[geometryNameToDelete].id;
-			delete clone.embeds[embedNameToDelete];
-			delete clone.geometries[geometryNameToDelete];
-			delete clone.objects[objectNameToDelete];
-		}
-		var materialCount = 0;
-		for(var materialNameToDelete in data.materials) {
-			if(materialName == materialNameToDelete) {
-				materialCount++;
-				continue;
-			}
-			delete clone.materials[materialNameToDelete];
-		}
-		clone.metadata = _.merge(clone.metadata, {
-			geometries: 1,
-			materials: materialCount,
-			objects: 1
-		})
-		objectsToWrite[objectName+/'index.json'] = clone;
-*/
