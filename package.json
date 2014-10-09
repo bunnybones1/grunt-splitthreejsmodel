@@ -1,7 +1,7 @@
 {
   "name": "grunt-splitthreejsmodel",
   "description": "A grunt plugin to split threejs json model files into geometry files and a hierarchy of object json files. For use in conjunction with h[grunt-convertautodesktothree](https://github.com/bunnybones1/grunt-convertautodesktothreejs).",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "https://github.com/Tomasz/grunt-splitthreejsmodel",
   "author": {
     "name": "Tomasz Dysinski",
