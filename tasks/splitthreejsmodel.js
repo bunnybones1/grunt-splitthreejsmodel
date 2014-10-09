@@ -12,7 +12,7 @@ var path = require('path'),
   fs = require('fs'),
   tar = require('tar'),
   _ = require('lodash'),
-  derive = require('../utils/filePathDerivatives'),
+  derive = require('filepathderivatives'),
   THREE = require('../lib/three.min.nodejs'),
   ensureDirectoryExists = require('../utils/ensureDirectoryExists');
 

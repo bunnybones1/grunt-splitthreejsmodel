@@ -1,5 +1,5 @@
 var fs = require('fs'),
-	derive = require('./filePathDerivatives'),
+	derive = require('filepathderivatives'),
 	path = require('path');
 function ensureDirectoryExists(pathDst, callback) {
 	var rootPath = path.resolve('.');
