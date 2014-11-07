@@ -37,6 +37,7 @@ module.exports = function(grunt) {
         options: {
           models: [
             'test/model1/parse.autodesk.dae',
+            'test/model1/parse.autodesk.2.dae',
             'test/model2/parse2.autodesk.dae'
           ]
         }

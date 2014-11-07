@@ -5,24 +5,33 @@ var embedsData;
 var optimizeGeometry = require('./optimizeGeometry');
 var useOptimize = true;
 var optimizeDecimalPlaces = 3;
+var includeExistingGeometryInRedundancyHunt = true;
 var reduceRedudantGeometry = true;
 var findSimilarGeometry = require('./findSimilarGeometry');
-var _geometryCache; 
-function saveObjectData(data, pathDst, objectsToWrite, grunt) {
+function crawlSplitAndSaveHierarchyData(data, pathDst, objectsToWrite, grunt) {
 	if(data.children) {
 		for(var objectName in data.children) {
 			var object = data.children[objectName];
-			saveObjectData(object, path.normalize(pathDst + objectName + '/'), objectsToWrite, grunt);
+			crawlSplitAndSaveHierarchyData(object, path.normalize(pathDst + objectName + '/'), objectsToWrite, grunt);
 		};
 		for(var objectName in data.children) {
 			data.children[objectName] = objectName;
 		}
 	}
 	objectsToWrite[path.normalize(pathDst+'/index')] = data;
-	saveGeometryDataIfAvailable(data, pathDst, objectsToWrite, grunt);
 }
 
-function saveGeometryDataIfAvailable(data, pathDst, objectsToWrite, grunt) {
+function crawlExtractAndSaveGeometryData(data, objectsToWrite, cache, grunt) {
+	if(data.children) {
+		for(var objectName in data.children) {
+			var object = data.children[objectName];
+			crawlExtractAndSaveGeometryData(object, objectsToWrite, cache, grunt);
+		};
+	}
+	saveGeometryDataIfAvailable(data, objectsToWrite, cache, grunt);
+}
+
+function saveGeometryDataIfAvailable(data, objectsToWrite, cache, grunt) {
 	if(data.geometry) {
 		var geometryData = embedsData[geometriesData[data.geometry].id];
 		if(useOptimize) optimizeGeometry(geometryData, optimizeDecimalPlaces);
@@ -30,15 +39,14 @@ function saveGeometryDataIfAvailable(data, pathDst, objectsToWrite, grunt) {
 		function queueGeometryWrite() {
 			objectsToWrite[path.normalize('geometry/' + data.geometry)] = geometryData;
 		}
-
 		if(reduceRedudantGeometry) {
-			var redundantGeometryName = findSimilarGeometry(geometryData, _geometryCache);
+			var redundantGeometryName = findSimilarGeometry(geometryData, cache);
 			if(redundantGeometryName) {
 				grunt.log.oklns("REUSING", redundantGeometryName);
 				data.geometry = redundantGeometryName;
 			}else{
 				grunt.log.oklns("CREATING", data.geometry);
-				_geometryCache[data.geometry] = geometryData;
+				cache[data.geometry] = geometryData;
 				queueGeometryWrite();
 			}
 		} else {
@@ -46,15 +54,26 @@ function saveGeometryDataIfAvailable(data, pathDst, objectsToWrite, grunt) {
 		}
 	}
 }
-function splitModel(data, pathDst, grunt) {
+function splitModel(data, pathDst, cache, grunt) {
+	var pathDelimiter = process.platform == 'win32' ? '\\' : '/';
 	var objectsToWrite = {};
-	_geometryCache = {};
+	cache = cache || {};
+
+	if(includeExistingGeometryInRedundancyHunt) {}
+
 	geometriesData = data.geometries;
 	embedsData = data.embeds;
 	var root = {
 		children : data.objects
 	}
-	saveObjectData(root, pathDst, objectsToWrite, grunt);
+
+	crawlExtractAndSaveGeometryData(root, objectsToWrite, cache, grunt);
+
+	var hierarchyPath = pathDst;
+	if(hierarchyPath.lastIndexOf(pathDelimiter) == hierarchyPath.length-1) hierarchyPath = hierarchyPath.substring(0, hierarchyPath.length-1);
+	objectsToWrite[path.normalize(hierarchyPath) + '.hierarchy'] = _.cloneDeep(data.objects);
+
+	crawlSplitAndSaveHierarchyData(root, pathDst, objectsToWrite, grunt);
 	return objectsToWrite;
 }
 
