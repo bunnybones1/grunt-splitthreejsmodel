@@ -3,5 +3,9 @@ npm-debug.log
 tmp
 test/model1/geometry
 test/model1/parse.autodesk
+test/model1/parse.autodesk.2
+test/model1/parse.autodesk.hierarchy.json
+test/model1/parse.autodesk.2.hierarchy.json
 test/model2/geometry
 test/model2/parse2.autodesk
+test/model2/parse2.autodesk.hierarchy.json

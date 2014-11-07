@@ -167,8 +167,5 @@ module.exports = function(grunt) {
       }
     }
     splitNextModel();
-
-    console.log(_geometryCaches);
-
   });
 };
