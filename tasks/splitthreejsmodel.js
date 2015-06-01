@@ -133,8 +133,10 @@ SplitModel.prototype = {
           }
           if(files.length > 0) {
             for (var i = files.length - 1; i >= 0; i--) {
-              geometryToLoad++;
-              fs.readFile(path.resolve(geometryPath + '/' + files[i]), handleGeometryData.bind(null, files[i]));
+              if(files[i].lastIndexOf('.json') == files[i].length - 5) {
+                geometryToLoad++;
+                fs.readFile(path.resolve(geometryPath + '/' + files[i]), handleGeometryData.bind(null, files[i]));
+              }
             }
           } else {
             callback(geometryCache);
